@@ -1,13 +1,13 @@
-#pragma once
 #include "Message.h"
 #include <iostream>
 
-Message::Message(const Message_t& msg) {
-    this->msg = msg;
+Message::Message(const Message_t& msg) : msg(msg) {}
+
+Message::~Message() {
+    std::cout << "Object destroyed" << std::endl;
 }
 
 const std::string& Message::getContent() const {
-    std::cout << msg.content << std::endl;
     return msg.content;
 };
 

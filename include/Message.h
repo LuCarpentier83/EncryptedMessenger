@@ -3,6 +3,7 @@
 
 #include <string>
 #include <ctime>
+#include <memory>
 
 typedef struct {
     std::string sender;
@@ -13,13 +14,14 @@ typedef struct {
 
 class Message {
 public:
-    Message(const Message_t& msg);
+    explicit Message(const Message_t& msg);
+    ~Message();
     const std::string& getSender() const;
     const std::string& getTarget() const;
     const std::string& getContent() const;
     const time_t& getTimestamp() const;
 private:
-    Message_t msg;
+    const Message_t& msg;
 };
 
 #endif //MESSAGE_H

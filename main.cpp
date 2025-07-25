@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 
 #include "Message.h"
@@ -13,7 +14,8 @@ int main() {
     message.sender = "Maha";
     message.target = "Lucas";
 
-    Message msg(message);
-    msg.getContent();
+    std::shared_ptr<Message> ptr_msg = std::make_shared<Message>(message);
+
+    std::cout << ptr_msg->getContent() << std::endl;
     return 0;
 }
