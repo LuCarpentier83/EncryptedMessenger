@@ -45,7 +45,8 @@ EVP_PKEY *User::generatePKey() {
     return user_pkey;
 }
 
-void User::initializeKeys() {
+
+void User::createPrivateKey() {
     EVP_PKEY* user_fullkey = getKeyPointer();
     BIO* f = BIO_new_file(filename.c_str(), "w");
     if (!f) {
@@ -53,7 +54,10 @@ void User::initializeKeys() {
     }
     PEM_write_bio_PrivateKey(f, user_fullkey, nullptr, nullptr, 0, nullptr, nullptr);
     BIO_free(f);
+}
 
+std::string User::createPublicKey() const {
+    EVP_PKEY* user_fullkey = getKeyPointer();
     BIO* bio = BIO_new(BIO_s_mem());
     if (!bio) {
         std::cout << "Failed to instantiate bio" << std::endl;
@@ -65,6 +69,7 @@ void User::initializeKeys() {
     char* data = nullptr;
     long len = BIO_get_mem_data(bio, &data);
     std::string pem(data, len);
-    publicKey = pem;
     BIO_free(bio);
+    return pem;
 }
+

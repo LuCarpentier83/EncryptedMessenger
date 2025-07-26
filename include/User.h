@@ -32,7 +32,8 @@ private:
         user_id = generateUserID();
         user_fullkey = generatePKey();
         filename = std::string(TOKEN_DIR) + "user" + std::to_string(user_id) + ".pem";
-        initializeKeys();
+        publicKey = createPublicKey();
+        createPrivateKey();
     }
 
     std::string name;
@@ -46,7 +47,8 @@ private:
      int generateUserID() {
         return ++next_user_id;
     }
-    void initializeKeys();
+    std::string createPublicKey() const;
+    void  createPrivateKey();
 };
 
 #endif //USER_H
