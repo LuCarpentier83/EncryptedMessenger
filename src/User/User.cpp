@@ -1,0 +1,70 @@
+#include "User.h"
+#include <iostream>
+
+std::shared_ptr<User> User::getInstance(const std::string &name) {
+    auto it = users.find(name);
+    if (it == users.end()) {
+        User *ptr = new User(name);
+        std::shared_ptr<User> user(ptr);
+        users[name] = user;
+        return user;
+    }
+    return it->second;
+}
+
+void User::displayUsers() {
+    for (auto& [key, value] : users) {
+        std::cout << "Username : " << key << std::endl;
+    }
+}
+
+EVP_PKEY *User::generatePKey() {
+    EVP_PKEY* user_pkey = nullptr;
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+
+    if (!ctx) {
+        std::cout << "Failed to generate context" << std::endl;
+        return nullptr;
+    }
+    if (EVP_PKEY_keygen_init(ctx) <= 0) {
+        std::cout << "Failed to init keygen" << std::endl;
+        EVP_PKEY_CTX_free(ctx);
+        return nullptr;
+    }
+    if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 2048) <= 0) {
+        std::cout << "Failed to set bit" << std::endl;
+        EVP_PKEY_CTX_free(ctx);
+        return nullptr;
+    }
+    if (EVP_PKEY_keygen(ctx, &user_pkey) <= 0) {
+        std::cout << "Failed to generate Key" << std::endl;
+        EVP_PKEY_CTX_free(ctx);
+        return nullptr;
+    }
+    EVP_PKEY_CTX_free(ctx);
+    return user_pkey;
+}
+
+void User::initializeKeys() {
+    EVP_PKEY* user_fullkey = getKeyPointer();
+    BIO* f = BIO_new_file(filename.c_str(), "w");
+    if (!f) {
+        std::cout << "Failed to write inside pem" << std::endl;
+    }
+    PEM_write_bio_PrivateKey(f, user_fullkey, nullptr, nullptr, 0, nullptr, nullptr);
+    BIO_free(f);
+
+    BIO* bio = BIO_new(BIO_s_mem());
+    if (!bio) {
+        std::cout << "Failed to instantiate bio" << std::endl;
+    }
+    if (!PEM_write_bio_PUBKEY(bio, user_fullkey)) {
+        BIO_free(bio);
+        std::cout << "Failed to write bio public key" << std::endl;
+    }
+    char* data = nullptr;
+    long len = BIO_get_mem_data(bio, &data);
+    std::string pem(data, len);
+    publicKey = pem;
+    BIO_free(bio);
+}

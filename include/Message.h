@@ -4,24 +4,22 @@
 #include <string>
 #include <ctime>
 #include <memory>
+#include <vector>
 
-typedef struct {
+typedef struct Message {
     std::string sender;
     std::string target;
     std::string content;
     time_t timestamp = time(nullptr);
-} Message_t;
+} message_t;
 
-class Message {
-public:
-    explicit Message(const Message_t& msg);
-    ~Message();
-    const std::string& getSender() const;
-    const std::string& getTarget() const;
-    const std::string& getContent() const;
-    const time_t& getTimestamp() const;
-private:
-    const Message_t& msg;
-};
+typedef struct EncryptedMessage {
+    std::string receiver_id;
+    std::string sender_id;
+    std::vector<uint8_t> cipher_text;
+} encrypted_message_t;
+
+encrypted_message_t encryptMessage(const message_t& msg);
+message_t decryptMessage(const encrypted_message_t& enc_msg);
 
 #endif //MESSAGE_H

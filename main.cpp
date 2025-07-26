@@ -1,21 +1,30 @@
-#pragma once
 #include <iostream>
-
 #include "Message.h"
-#include <cstring>
+#include "User.h"
+#include "Encryption.h"
 
 using namespace std;
 
 int main() {
 
+    // message_t message;
+    // message.content = "Hello Lucas";
+    // message.sender = "Maha";
+    // message.target = "Lucas";
 
-    Message_t message;
-    message.content = "Hello Lucas";
-    message.sender = "Maha";
-    message.target = "Lucas";
+    auto lucas = User::getInstance("lucas");
+    std::cout << lucas->getName() << std::endl;
+    cout << lucas->getUserID() << endl;
+    cout << lucas->publicKey << endl;
 
-    std::shared_ptr<Message> ptr_msg = std::make_shared<Message>(message);
+    auto maha = User::getInstance("maha");
+    std::cout << maha->getName() << std::endl;
+    cout << maha->getUserID() << endl;
+    cout << maha->publicKey << endl;
 
-    std::cout << ptr_msg->getContent() << std::endl;
+    auto george = User::getInstance("george");
+    std::cout << george->getName() << std::endl;
+    cout << george->getUserID() << endl;
+    cout << george->publicKey << endl;
     return 0;
 }
