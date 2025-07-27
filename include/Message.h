@@ -19,7 +19,4 @@ typedef struct EncryptedMessage {
     std::vector<uint8_t> cipher_text;
 } encrypted_message_t;
 
-encrypted_message_t encryptMessage(const message_t& msg);
-message_t decryptMessage(const encrypted_message_t& enc_msg);
-
 #endif //MESSAGE_H

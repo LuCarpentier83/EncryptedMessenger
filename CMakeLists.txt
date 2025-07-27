@@ -19,7 +19,11 @@ add_executable(app ${SRC_FILES}
 
 target_include_directories(app PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
-set(OPENSSL_ROOT_DIR "C:/msys64/mingw64")
+if(WIN32)
+    set(OPENSSL_ROOT_DIR "C:/msys64/mingw64")
+elseif(APPLE)
+    set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl@3")  # ou /usr/local
+endif()
 set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT_DIR}/include")
 set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT_DIR}/lib/libcrypto.a")
 set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT_DIR}/lib/libssl.a")

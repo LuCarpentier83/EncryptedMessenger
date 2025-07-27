@@ -1,13 +1,10 @@
 #ifndef ENCRYPTION_H
 #define ENCRYPTION_H
 
-template <typename T, typename U>
-class disp {
+class Encryption
+{
 public:
-    disp(T value, U value2) : data(value), data2(value2) {}
-    auto add() {return data+data2;}
-private:
-    T data;
-    U data2;
+    static encrypted_message_t encryptMessage(Message message, EVP_PKEY* pkey);
+    static message_t decryptMessage(EncryptedMessage encrypted_message, EVP_PKEY* pkey);
 };
 #endif //ENCRYPTION_H
