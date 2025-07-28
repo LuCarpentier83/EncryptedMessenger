@@ -16,7 +16,7 @@ typedef struct Message {
 typedef struct EncryptedMessage {
     std::string receiver_id;
     std::string sender_id;
-    std::vector<uint8_t> cipher_text;
+    std::string cipher_text;
 } encrypted_message_t;
 
 #endif //MESSAGE_H

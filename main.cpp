@@ -7,10 +7,7 @@ using namespace std;
 
 int main() {
 
-    // message_t message;
-    // message.content = "Hello Lucas";
-    // message.sender = "Maha";
-    // message.target = "Lucas";
+
 
     auto lucas = User::getInstance("lucas");
     std::cout << lucas->getName() << std::endl;
@@ -26,5 +23,14 @@ int main() {
     std::cout << george->getName() << std::endl;
     cout << george->getUserID() << endl;
     cout << george->publicKey << endl;
+
+    message_t message;
+    message.content = "Hello Lucas";
+    message.sender = "Maha";
+    message.target = "Lucas";
+
+    EVP_PKEY* lucas_key = Encryption::convertPKeyStringToEVP_PKEY(lucas->publicKey);
+    encrypted_message_t encrypted_message = Encryption::encryptMessage(message, lucas_key);
+    std::cout << encrypted_message.cipher_text << std::endl;
     return 0;
 }
