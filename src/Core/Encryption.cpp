@@ -5,12 +5,22 @@
 #include <openssl/evp.h>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <openssl/err.h>
+#include <stdexcept>
 
 encrypted_message_t Encryption::encryptMessage(message_t& message, EVP_PKEY* pkey) {
     // Initialize context
     EVP_PKEY_CTX* ctx;
     ctx = EVP_PKEY_CTX_new(pkey, NULL);
-    EVP_PKEY_encrypt_init(ctx);
+    if (!ctx) {
+        throw std::runtime_error("Failed to create EVP_PKEY_CTX");
+    }
+
+    if (EVP_PKEY_encrypt_init(ctx) <= 0) {
+        EVP_PKEY_CTX_free(ctx);
+        throw std::runtime_error("Failed to init encrypt");
+    }
 
     // Set up padding
     EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING);
@@ -33,9 +43,56 @@ encrypted_message_t Encryption::encryptMessage(message_t& message, EVP_PKEY* pke
     return output;
 }
 
-message_t Encryption::decryptMessage(EncryptedMessage& encrypted_message, EVP_PKEY* pkey)
-{
-    return message_t{};
+message_t Encryption::decryptMessage(EncryptedMessage& encrypted_message, std::string filepath) {
+
+    BIO* bio = BIO_new_file(filepath.c_str(), "r");
+    if (!bio) {
+        ERR_print_errors_fp(stderr);
+        throw std::runtime_error("Error while reading file");
+    }
+
+    EVP_PKEY* pkey = PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL);
+    if (!pkey) {
+        BIO_free(bio);
+        throw std::runtime_error("Error while reading PEM");
+    }
+
+    // Initialize context
+    EVP_PKEY_CTX* ctx;
+    ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx) {
+        throw std::runtime_error("Failed to create EVP_PKEY_CTX");
+    }
+    if (EVP_PKEY_decrypt_init(ctx) <= 0) {
+        EVP_PKEY_CTX_free(ctx);
+        throw std::runtime_error("Failed to init decrypt");
+    }
+
+    // Set up padding
+    EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING);
+
+    size_t outLen = 0;
+    if (EVP_PKEY_decrypt(ctx, NULL, &outLen, (const unsigned char*)encrypted_message.cipher_text.data(),
+                         encrypted_message.cipher_text.size()) <= 0) {
+
+                            EVP_PKEY_CTX_free(ctx);
+                            throw std::runtime_error("Failed to get decrypted length");
+                         }
+
+    std::vector<unsigned char> decrypted(outLen);
+    if (EVP_PKEY_decrypt(ctx, NULL, &outLen, (const unsigned char*)encrypted_message.cipher_text.data(),
+                            encrypted_message.cipher_text.size()) <= 0) {
+
+                            EVP_PKEY_CTX_free(ctx);
+                            throw std::runtime_error("Failed to decrypt message");
+                        }
+
+    EVP_PKEY_CTX_free(ctx);
+    message_t output;
+    output.content.assign((char*)decrypted.data(), outLen);
+    return output;
+
+
 }
 
 EVP_PKEY* Encryption::convertPKeyStringToEVP_PKEY(std::string& PKey)

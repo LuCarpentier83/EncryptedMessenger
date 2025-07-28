@@ -32,5 +32,7 @@ int main() {
     EVP_PKEY* lucas_key = Encryption::convertPKeyStringToEVP_PKEY(lucas->publicKey);
     encrypted_message_t encrypted_message = Encryption::encryptMessage(message, lucas_key);
     std::cout << encrypted_message.cipher_text << std::endl;
+    message_t decrypted_message = Encryption::decryptMessage(encrypted_message, "/Users/lucascarpentier/Documents/EncryptedMessenger/token/user1.pem");
+    std::cout << decrypted_message.content << std::endl;
     return 0;
 }
