@@ -80,7 +80,7 @@ message_t Encryption::decryptMessage(EncryptedMessage& encrypted_message, std::s
                          }
 
     std::vector<unsigned char> decrypted(outLen);
-    if (EVP_PKEY_decrypt(ctx, NULL, &outLen, (const unsigned char*)encrypted_message.cipher_text.data(),
+    if (EVP_PKEY_decrypt(ctx, decrypted.data(), &outLen, (const unsigned char*)encrypted_message.cipher_text.data(),
                             encrypted_message.cipher_text.size()) <= 0) {
 
                             EVP_PKEY_CTX_free(ctx);
@@ -91,12 +91,9 @@ message_t Encryption::decryptMessage(EncryptedMessage& encrypted_message, std::s
     message_t output;
     output.content.assign((char*)decrypted.data(), outLen);
     return output;
-
-
 }
 
-EVP_PKEY* Encryption::convertPKeyStringToEVP_PKEY(std::string& PKey)
-{
+EVP_PKEY* Encryption::convertPKeyStringToEVP_PKEY(std::string& PKey) {
     const char* pubkey_pem_str = PKey.c_str();
 
     BIO* bio = BIO_new_mem_buf(pubkey_pem_str, -1);

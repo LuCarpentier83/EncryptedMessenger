@@ -34,3 +34,4 @@ link_directories(${OPENSSL_LIBRARIES})
 target_link_libraries(app PRIVATE OpenSSL::Crypto)
 
 add_compile_definitions(TOKEN_DIR="${CMAKE_SOURCE_DIR}/token/")
+add_compile_definitions(TEST_PEM_PATH="${CMAKE_SOURCE_DIR}/token/user1.pem")
