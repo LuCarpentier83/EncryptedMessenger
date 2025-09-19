@@ -1,10 +1,12 @@
 #include "User.h"
+#include "Encryption.h"
+
 #include <iostream>
 
-std::shared_ptr<User> User::getInstance(const std::string &name) {
+std::shared_ptr<User> User::getInstance(const std::string &name, Broker& broker) {
     auto it = users.find(name);
     if (it == users.end()) {
-        User *ptr = new User(name);
+        User *ptr = new User(name, broker);
         std::shared_ptr<User> user(ptr);
         users[name] = user;
         return user;
@@ -71,5 +73,22 @@ std::string User::createPublicKey() const {
     std::string pem(data, len);
     BIO_free(bio);
     return pem;
+}
+
+void User::sendMessage(message_t& msg) {
+    encrypted_message_t enc_msg;
+    enc_msg.sender_id = msg.senderID;
+    enc_msg.receiver_id = msg.targetID;
+    EVP_PKEY* recipient_key = Encryption::convertPKeyStringToEVP_PKEY(this->publicKey);
+    if (recipient_key == nullptr) {
+        throw std::runtime_error("Failed to convert recipient pub key");
+    }
+    enc_msg.cipher_text = Encryption::encryptMessage(msg.content, recipient_key).cipher_text;
+    EVP_PKEY_free(recipient_key);
+    broker.sendMessage(enc_msg);
+}
+
+void User::connectUser() {
+    broker.connectUser(user_id);
 }
 

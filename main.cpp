@@ -2,12 +2,33 @@
 #include "Message.h"
 #include "User.h"
 #include "Encryption.h"
+#include "Broker.h"
 
 using namespace std;
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+    os << "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        os << vec[i];
+        if (i != vec.size() - 1)
+            os << ", ";
+    }
+    os << "]";
+    return os;
+}
+
+
 int main() {
 
-    // auto lucas = User::getInstance("lucas");
+    Broker& broker = Broker::initBroker();
+    auto lucas = User::getInstance("lucas", broker);
+    auto bastien = User::getInstance("bastien", broker);
+    auto pfeur = User::getInstance("pfeur", broker);
+    lucas->connectUser();
+    pfeur->connectUser();
+    bastien->connectUser();
+    std::cout << "Connected user(s) : " << broker.getAllConnectedUser() << std::endl;
     // std::cout << lucas->getName() << std::endl;
     // cout << lucas->getUserID() << endl;
     // cout << lucas->publicKey << endl;

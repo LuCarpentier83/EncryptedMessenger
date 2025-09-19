@@ -1,6 +1,9 @@
 #ifndef USER_H
 #define USER_H
 
+#include <Message.h>
+#include <Broker.h>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -13,7 +16,7 @@
 class User {
     inline static int next_user_id;
 public:
-    static std::shared_ptr<User> getInstance(const std::string& name);
+    static std::shared_ptr<User> getInstance(const std::string& name, Broker& broker);
 
     User(const User&) = delete;
     User& operator=(const User&) = delete;
@@ -25,10 +28,14 @@ public:
     const std::string& getName() const { return this->name;}
     int getUserID() const { return user_id;}
     static void displayUsers();
+    void sendMessage(message_t& msg); // encryption run inside
+    void receiveMessage(encrypted_message_t& msg); // decryption run inside
+    void connectUser();
 
 
 private:
-    explicit User(std::string  name) : name(std::move(name)) {
+    explicit User(std::string  name, Broker& broker) : name(std::move(name)), broker(broker) {
+        broker.registerUser(this);
         user_id = generateUserID();
         user_fullkey = generatePKey();
         filename = std::string(TOKEN_DIR) + "user" + std::to_string(user_id) + ".pem";
@@ -49,6 +56,7 @@ private:
     }
     std::string createPublicKey() const;
     void  createPrivateKey();
+    Broker& broker;
 };
 
 #endif //USER_H

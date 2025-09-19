@@ -2,8 +2,10 @@
 #define BROKER_H
 
 #include "Message.h"
-#include "User.h"
 #include <queue>
+#include <unordered_map>
+
+class User;
 
 class Broker {
 public:
@@ -15,12 +17,20 @@ public:
     Broker& operator=(const Broker&) = delete;
     ~Broker() = default;
 
-    void registerUser(const User& user);
+    void registerUser(User* user);
     bool checkRegisteredUser(int user_id);
+    void sendMessage(encrypted_message_t message);
+    void disconnectUser(int user_id);
+    void connectUser(int user_id);
+    inline bool isConnectedUser(int user_id) {
+        return std::find(connectedUsers.begin(), connectedUsers.end(), user_id) != connectedUsers.end();
+    }
+    std::vector<int> getAllConnectedUser() {return connectedUsers;}
 private:
     Broker(){};
-    std::unordered_map<int, std::queue<Message>> userMessages;
+    std::unordered_map<int, std::queue<encrypted_message_t>> userMessages;
     std::unordered_map<int, User> users;
+    std::vector<int> connectedUsers;
 
 };
 #endif //BROKER_H

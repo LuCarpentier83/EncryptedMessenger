@@ -9,7 +9,7 @@
 class Encryption
 {
 public:
-    static encrypted_message_t encryptMessage(Message& message, EVP_PKEY* pkey);
+    static encrypted_message_t encryptMessage(std::string message, EVP_PKEY* pkey);
     static message_t decryptMessage(EncryptedMessage& encrypted_message, std::string filepath);
     static EVP_PKEY* convertPKeyStringToEVP_PKEY(std::string& PKey);
 };

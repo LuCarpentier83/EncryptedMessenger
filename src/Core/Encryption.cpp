@@ -9,7 +9,7 @@
 #include <openssl/err.h>
 #include <stdexcept>
 
-encrypted_message_t Encryption::encryptMessage(message_t& message, EVP_PKEY* pkey) {
+encrypted_message_t Encryption::encryptMessage(std::string message, EVP_PKEY* pkey) {
     // Initialize context
     EVP_PKEY_CTX* ctx;
     ctx = EVP_PKEY_CTX_new(pkey, NULL);
@@ -27,7 +27,7 @@ encrypted_message_t Encryption::encryptMessage(message_t& message, EVP_PKEY* pke
 
     // Encryption
     size_t cipherLen;
-    std::string raw_text = message.content;
+    std::string raw_text = message;
     EVP_PKEY_encrypt(ctx, NULL, &cipherLen, (const unsigned char *) raw_text.c_str(), raw_text.size());
     unsigned char* cipherText = (unsigned  char *) OPENSSL_malloc(cipherLen);
     EVP_PKEY_encrypt(ctx, cipherText, &cipherLen, (const unsigned char *) raw_text.c_str(), raw_text.size());

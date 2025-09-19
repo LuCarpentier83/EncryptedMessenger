@@ -7,15 +7,15 @@
 #include <vector>
 
 typedef struct Message {
-    std::string sender;
-    std::string target;
+    int senderID;
+    int targetID;
     std::string content;
     time_t timestamp = time(nullptr);
 } message_t;
 
 typedef struct EncryptedMessage {
-    std::string receiver_id;
-    std::string sender_id;
+    int receiver_id;
+    int sender_id;
     std::string cipher_text;
 } encrypted_message_t;
 
