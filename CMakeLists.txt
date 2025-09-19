@@ -11,13 +11,7 @@ file(GLOB_RECURSE SRC_FILES
         ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
-add_executable(app ${SRC_FILES}
-        src/User/User.cpp
-        include/User.h
-        include/Encryption.h
-        src/Core/Encryption.cpp
-        src/Core/Broker.cpp
-        include/Broker.h)
+add_executable(app ${SRC_FILES})
 
 target_include_directories(app PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
