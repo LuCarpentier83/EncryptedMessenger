@@ -43,3 +43,18 @@ void Broker::disconnectUser(int user_id) {
     }
     std::cout << "User with ID number " << user_id << "was not connected." << std::endl;
 }
+
+void Broker::printUserMessages(int user_id) {
+    auto it = userMessages.find(user_id);
+    if (it == userMessages.end()) {
+        std::cout << "No messages for this user " << user_id << std::endl;
+        return;
+    }
+    std::queue<encrypted_message_t> copy = it->second;
+    std::cout << "Messages for user " << user_id << " :" << std::endl;
+    while (!copy.empty()) {
+        const encrypted_message_t& msg = copy.front();
+        std::cout << "From: " << msg.sender_id << ", Content: " << msg.cipher_text << std::endl;
+        copy.pop();
+    }
+}
