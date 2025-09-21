@@ -84,8 +84,17 @@ void User::sendMessage(message_t& msg) {
         throw std::runtime_error("Failed to convert recipient pub key");
     }
     enc_msg.cipher_text = Encryption::encryptMessage(msg.content, recipient_key).cipher_text;
-    EVP_PKEY_free(recipient_key);
     broker.sendMessage(enc_msg);
+}
+
+void User::receiveMessage() {
+    auto& queue = broker.getMessagesForUser(user_id);
+    while (!queue.empty()) {
+        encrypted_message_t& enc_msg = queue.front();
+        message_t clear_msg = Encryption::decryptMessage(enc_msg.cipher_text, TEST_PEM_PATH);
+        std::cout << clear_msg.content << std::endl;
+        queue.pop();
+    }
 }
 
 void User::connectUser() {

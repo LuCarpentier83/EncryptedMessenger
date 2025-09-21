@@ -22,6 +22,7 @@ public:
     User& operator=(const User&) = delete;
     ~User() {
         EVP_PKEY_free(user_fullkey);
+        user_fullkey = nullptr;
     };
 
     std::string publicKey;
@@ -29,18 +30,19 @@ public:
     int getUserID() const { return user_id;}
     static void displayUsers();
     void sendMessage(message_t& msg); // encryption run inside
-    void receiveMessage(encrypted_message_t& msg); // decryption run inside
+    void receiveMessage(); // decryption run inside
     void connectUser();
 
 
 private:
     explicit User(std::string  name, Broker& broker) : name(std::move(name)), broker(broker) {
-        broker.registerUser(this);
+
         user_id = generateUserID();
         user_fullkey = generatePKey();
         filename = std::string(TOKEN_DIR) + "user" + std::to_string(user_id) + ".pem";
         publicKey = createPublicKey();
         createPrivateKey();
+        broker.registerUser(this);
     }
 
     std::string name;
