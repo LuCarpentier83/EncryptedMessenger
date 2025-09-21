@@ -43,7 +43,7 @@ encrypted_message_t Encryption::encryptMessage(std::string message, EVP_PKEY* pk
     return output;
 }
 
-message_t Encryption::decryptMessage(EncryptedMessage& encrypted_message, std::string filepath) {
+message_t Encryption::decryptMessage(std::string& encrypted_message, std::string filepath) {
 
     BIO* bio = BIO_new_file(filepath.c_str(), "r");
     if (!bio) {
@@ -72,16 +72,16 @@ message_t Encryption::decryptMessage(EncryptedMessage& encrypted_message, std::s
     EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING);
 
     size_t outLen = 0;
-    if (EVP_PKEY_decrypt(ctx, NULL, &outLen, (const unsigned char*)encrypted_message.cipher_text.data(),
-                         encrypted_message.cipher_text.size()) <= 0) {
+    if (EVP_PKEY_decrypt(ctx, NULL, &outLen, (const unsigned char*)encrypted_message.data(),
+                         encrypted_message.size()) <= 0) {
 
                             EVP_PKEY_CTX_free(ctx);
                             throw std::runtime_error("Failed to get decrypted length");
                          }
 
     std::vector<unsigned char> decrypted(outLen);
-    if (EVP_PKEY_decrypt(ctx, decrypted.data(), &outLen, (const unsigned char*)encrypted_message.cipher_text.data(),
-                            encrypted_message.cipher_text.size()) <= 0) {
+    if (EVP_PKEY_decrypt(ctx, decrypted.data(), &outLen, (const unsigned char*)encrypted_message.data(),
+                            encrypted_message.size()) <= 0) {
 
                             EVP_PKEY_CTX_free(ctx);
                             throw std::runtime_error("Failed to decrypt message");
