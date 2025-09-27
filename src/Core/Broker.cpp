@@ -1,56 +1,83 @@
 #include "Broker.h"
 #include "User.h"
+#include "Encryption.h"
 
 #include <iostream>
+#include <queue>
 
 void Broker::registerUser(User* user) {
     if (user == nullptr) {
         return;
     }
     int id = user->getUserID();
-    auto it = userMessages.find(id);
-    if (it == userMessages.end()) {
-        userMessages[id] = std::queue<encrypted_message_t>();
+    auto it = users.find(id);
+    if (it == users.end()) {
+        users[id] = UserData{user, std::queue<encrypted_message_t>(), false};
         std::cout << "Sucessfully registered " << user->getName() << std::endl;
     }
 }
 
 bool Broker::checkRegisteredUser(int user_id){
-    return userMessages.find(user_id) != userMessages.end();
+    return users.find(user_id) != users.end();
 }
 
 void Broker::sendMessage(encrypted_message_t msg) {
-    auto it = userMessages.find(msg.receiver_id);
-    if (it == userMessages.end()) {
+    if (!users.at(msg.sender_id).connected) {
+        return;
+    }
+    auto it = users.find(msg.receiver_id);
+    if (it == users.end()) {
         throw std::runtime_error("Receiver not found.");
     }
-    it->second.push(msg);
+    it->second.messages.push(msg);
+}
+
+void Broker::receiveMessage(int user_id) {
+    if (!users.at(user_id).connected) {
+        return;
+    }
+    auto& queue = getMessagesForUser(user_id);
+    while (!queue.empty()) {
+        encrypted_message_t& enc_msg = queue.front();
+        message_t clear_msg = Encryption::decryptMessage(enc_msg.cipher_text, TEST_PEM_PATH);
+        std::cout << clear_msg.content << std::endl;
+        queue.pop();
+    }
 }
 
 void Broker::connectUser(int user_id) {
-    if (std::find(connectedUsers.begin(), connectedUsers.end(), user_id) == connectedUsers.end()) {
-        connectedUsers.push_back(user_id);
+    auto it = users.find(user_id);
+    if (it == users.end()) {
         return;
     }
-    std::cout << "User with ID number " << user_id << "is already connected." << std::endl;
+    if (it->second.connected) {
+        std::cout << "User with ID number " << user_id << " is already connected." << std::endl;
+        return;
+    }
+    it->second.connected = true;
 }
 
+
 void Broker::disconnectUser(int user_id) {
-    auto it = std::find(connectedUsers.begin(), connectedUsers.end(), user_id);
-    if (it != connectedUsers.end()) {
-        connectedUsers.erase(it);
+    auto it = users.find(user_id);
+    if (it == users.end()) {
         return;
     }
-    std::cout << "User with ID number " << user_id << "was not connected." << std::endl;
+    if (!it->second.connected) {
+        std::cout << "User with ID number " << user_id << " is already disconnected." << std::endl;
+        return;
+    }
+    it->second.connected = false;
+    std::cout << "User with ID number " << user_id << " is now disconnected." << std::endl;
 }
 
 void Broker::printUserMessages(int user_id) {
-    auto it = userMessages.find(user_id);
-    if (it == userMessages.end()) {
+    auto it = users.find(user_id);
+    if (it == users.end()) {
         std::cout << "No messages for this user " << user_id << std::endl;
         return;
     }
-    std::queue<encrypted_message_t> copy = it->second;
+    std::queue<encrypted_message_t> copy = it->second.messages;
     std::cout << "Messages for user " << user_id << " :" << std::endl;
     while (!copy.empty()) {
         const encrypted_message_t& msg = copy.front();

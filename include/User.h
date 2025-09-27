@@ -17,7 +17,6 @@ class User {
     inline static int next_user_id;
 public:
     static std::shared_ptr<User> getInstance(const std::string& name, Broker& broker);
-
     User(const User&) = delete;
     User& operator=(const User&) = delete;
     ~User() {
@@ -32,6 +31,7 @@ public:
     void sendMessage(message_t& msg); // encryption run inside
     void receiveMessage(); // decryption run inside
     void connectUser();
+    void disconnectUser();
 
 
 private:
@@ -39,7 +39,7 @@ private:
 
         user_id = generateUserID();
         user_fullkey = generatePKey();
-        filename = std::string(TOKEN_DIR) + "user" + std::to_string(user_id) + ".pem";
+        filename = std::string(TOKEN_DIR) + "user" + this->name + ".pem";
         publicKey = createPublicKey();
         createPrivateKey();
         broker.registerUser(this);

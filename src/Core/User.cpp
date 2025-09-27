@@ -3,6 +3,18 @@
 
 #include <iostream>
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+    os << "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        os << vec[i];
+        if (i != vec.size() - 1)
+            os << ", ";
+    }
+    os << "]";
+    return os;
+}
+
 std::shared_ptr<User> User::getInstance(const std::string &name, Broker& broker) {
     auto it = users.find(name);
     if (it == users.end()) {
@@ -79,7 +91,8 @@ void User::sendMessage(message_t& msg) {
     encrypted_message_t enc_msg;
     enc_msg.sender_id = msg.senderID;
     enc_msg.receiver_id = msg.targetID;
-    EVP_PKEY* recipient_key = Encryption::convertPKeyStringToEVP_PKEY(this->publicKey);
+    std::string public_key = broker.getUserById(enc_msg.receiver_id)->publicKey;
+    EVP_PKEY* recipient_key = Encryption::convertPKeyStringToEVP_PKEY(public_key);
     if (recipient_key == nullptr) {
         throw std::runtime_error("Failed to convert recipient pub key");
     }
@@ -88,16 +101,15 @@ void User::sendMessage(message_t& msg) {
 }
 
 void User::receiveMessage() {
-    auto& queue = broker.getMessagesForUser(user_id);
-    while (!queue.empty()) {
-        encrypted_message_t& enc_msg = queue.front();
-        message_t clear_msg = Encryption::decryptMessage(enc_msg.cipher_text, TEST_PEM_PATH);
-        std::cout << clear_msg.content << std::endl;
-        queue.pop();
-    }
+    int user_id = this->user_id;
+    broker.receiveMessage(user_id);
 }
 
 void User::connectUser() {
     broker.connectUser(user_id);
+}
+
+void User::disconnectUser() {
+    broker.disconnectUser(user_id);
 }
 
